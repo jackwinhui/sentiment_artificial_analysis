@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+"""
+A simple Py script to import needed NLTK modules with NLTK.download(). 
+"""
+
+
 import nltk
 import ssl 
 
