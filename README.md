@@ -22,4 +22,9 @@ Finally, to install NLTK requirements, run the following from the command line:
 python3 nltk_downloads.py
 ```
 
+## References
+Please cite the following papers if you use EmoBank:
+* Sven Buechel and Udo Hahn. 2017. EmoBank: Studying the Impact of Annotation Perspective and Representation Format on Dimensional Emotion Analysis. In EACL 2017 - Proceedings of the 15th Conference of the European Chapter of the Association for Computational Linguistics. Valencia, Spain, April 3-7, 2017. Volume 2, Short Papers, pages 578-585. Available: http://aclweb.org/anthology/E17-2092
+
+
 
