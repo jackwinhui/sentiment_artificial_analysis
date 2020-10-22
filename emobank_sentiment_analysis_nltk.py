@@ -2,10 +2,14 @@
 """
 A basic sentiment analysis model leveraging the NLTK module and the EmoBank corpus.
 
-This script
-1. Preprocesses EmoBank data. 
-2. Trains and Tests a Naive Bayes classifier with k-fold cross validation. 
-3. Allows the user to try putting in their own sentences for the classifier. 
+This script:
+    1. Preprocesses EmoBank data. 
+    2. Trains and Tests a Naive Bayes classifier with k-fold cross validation. 
+    3. Allows the user to try putting in their own sentences for the classifier. 
+
+Results: With k=10, n=10000+, we found that
+    - Naive Bayes Classifier gave us ~24% accuracy
+    - Max Entropy Classifier gave us ~27% accuracy
 """
 
 from preprocessing_utils import closest_emotion, preprocess_text, EmotionVAD
