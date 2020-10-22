@@ -69,7 +69,7 @@ def k_fold_cross_validation(dataset, k, classifier_type="naive_bayes"):
             best_classifier = classifier
             max_accuracy = accuracy
 
-    print(max_accuracy)
+    print("K-fold cross validation's best accuracy was " + str(max_accuracy) + ".")
     return best_classifier
 
 

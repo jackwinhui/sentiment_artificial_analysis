@@ -22,7 +22,7 @@ Finally, to install NLTK requirements, run the following from the command line:
 python3 nltk_downloads.py
 ```
 
-## Running the Code
+## Training + Testing the Models
 
 To run the code from the starter project, performing a simple Positive/Negative sentiment analysis on NLTK's built in Twitter dataset, run: 
 ```
