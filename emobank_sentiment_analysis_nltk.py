@@ -13,7 +13,9 @@ Results: With k=10, n=10000+, we found that
 """
 
 from preprocessing_utils import closest_emotion, preprocess_text, EmotionVAD
-from nltk import FreqDist, classify, NaiveBayesClassifier, MaxentClassifier
+from nltk import FreqDist, classify, NaiveBayesClassifier, MaxentClassifier, SklearnClassifier
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.svm import SVC
 
 import pandas as pd 
 import random
@@ -60,7 +62,8 @@ def k_fold_cross_validation(dataset, k, classifier_type="naive_bayes"):
         train_data = dataset[:test_start] + dataset[test_end:]
 
         if classifier_type == "naive_bayes": 
-            classifier = NaiveBayesClassifier.train(train_data)
+            sk_classifier = SklearnClassifier(MultinomialNB())
+            classifier = sk_classifier.train(train_data)
         else: 
             classifier = MaxentClassifier.train(train_data, max_iter=MAX_ENT_MAX_ITER)
         accuracy = classify.accuracy(classifier, test_data)
@@ -71,6 +74,13 @@ def k_fold_cross_validation(dataset, k, classifier_type="naive_bayes"):
 
     print("K-fold cross validation's best accuracy was " + str(max_accuracy) + ".")
     return best_classifier
+
+
+def _create_text_collection(): 
+    """ 
+    An attempt to create an NLTK text collection object. 
+    """ 
+
 
 
 def _normalize_emobank_VAD(emotion_vad): 

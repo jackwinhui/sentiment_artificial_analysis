@@ -96,5 +96,5 @@ def _norm_between_points(emotion_vad_1, emotion_vad_2):
 
 
 def _remove_punctuation(text): 
-    return re.sub(r"[^a-zA-Z0-9]+", ' ', text)
+    return re.sub(r"[^a-zA-Z0-9]+", ' ', text)    
     
