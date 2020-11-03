@@ -12,10 +12,12 @@ Results: With k=10, n=10000+, we found that
     - Max Entropy Classifier gave us ~27% accuracy
 """
 
-from preprocessing_utils import closest_emotion, preprocess_text, EmotionVAD
+from preprocessing_utils import preprocess_text
 from nltk import FreqDist, classify, NaiveBayesClassifier, MaxentClassifier, SklearnClassifier
+from nltk.text import TextCollection
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.svm import SVC
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 import pandas as pd 
 import random
@@ -23,24 +25,35 @@ import random
 MAX_ENT_MAX_ITER = 10
 NUM_DATA_PARTITIONS = 10
 
+CSV_FILE_NAME = "clean_tweet.csv"
 
-def preprocess_dataset(emo_df): 
+
+def preprocess_dataset(): 
     """
-    Preprocesses the Pandas Dataframe for EmoBank. This function: 
+    Preprocesses the cleaned twitter CSV file for training/testing on NLTK. 
     
     1. Preprocesses + Tokenizes input text.
     2. Converts VAD values to their closest basic emotion. 
+    3. Prints TFIDF (and does nothing else with it). 
     """
-    dataset = []
-    for ind, row in emo_df.iterrows(): 
-        emotion_vad = _normalize_emobank_VAD(EmotionVAD(row['V'], row['A'], row['D']))
-        emotion_label = closest_emotion(emotion_vad)
+    tweet_df = pd.read_csv(CSV_FILE_NAME, index_col=0, encoding='ISO-8859–1', na_filter=False)
 
+    dataset = []
+    strs = [] 
+
+    for ind, row in tweet_df.iterrows(): 
+        sentiment_label = row['sentiment']
         text_tokens = preprocess_text(row['text'])
 
-        datapoint = (text_tokens, emotion_label)
+        strs.append(row['text'])
+
+        datapoint = (text_tokens, sentiment_label)
         dataset.append(datapoint)
 
+    tf_idf = TfidfVectorizer(tokenizer=preprocess_text, stop_words='english')
+    tds = tf_idf.fit_transform(strs)
+
+    print(tds)
     return dataset 
 
 
@@ -76,36 +89,25 @@ def k_fold_cross_validation(dataset, k, classifier_type="naive_bayes"):
     return best_classifier
 
 
-def _create_text_collection(): 
+def _create_tf_idf(source): 
     """ 
     An attempt to create an NLTK text collection object. 
     """ 
-
-
-
-def _normalize_emobank_VAD(emotion_vad): 
-    """
-    Normalized EmoBank VAD values (in range [1,5]) to be in [-1, 1]. 
-    """
-    normalize = lambda x : (x-3)/2
-    return EmotionVAD(
-        normalize(emotion_vad.V), 
-        normalize(emotion_vad.A),
-        normalize(emotion_vad.D),
-    )    
+    tf_idf = TfidfVectorizer(tokenizer=preprocess_text, stop_words='english')
+    tfs = tf_idf.fit_transform(source.keys())
+    print(tf_idf.get_feature_names())
+    return tfs
 
 
 if __name__ == "__main__": 
-    print("Loading EmoBank data...")
-    emo_df = pd.read_csv("EmoBank/corpus/emobank.csv", index_col=0)
-
-    print("Preprocessing EmoBank data...")
-    dataset = preprocess_dataset(emo_df)
+    print("Preprocessing Twitter data...")
+    dataset = preprocess_dataset()
 
     print("Training a model...")
     classifier = k_fold_cross_validation(dataset, NUM_DATA_PARTITIONS)
 
     while True: 
         sentence = input("Type a sentence to try classifying: ")
-        print(classifier.classify(preprocess_text(sentence)))
+        labeler = lambda x : "Positive" if x > 0 else "Negative"
+        print(labeler(classifier.classify(preprocess_text(sentence))))
 

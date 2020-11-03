@@ -31,7 +31,7 @@ python3 nlp_test.py
 
 To run the NTLK-based classifier for 8 different emotions on the EmoBank corpus, run: 
 ```
-python3 emobank_sentiment_analysis_nltk.py
+python3 sentiment_analysis_nltk.py
 ```
 
 ## References
