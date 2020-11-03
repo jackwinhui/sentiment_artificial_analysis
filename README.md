@@ -29,6 +29,11 @@ To run the code from the starter project, performing a simple Positive/Negative 
 python3 nlp_test.py
 ```
 
+First, to create a cleaned .csv file for the Twitter Dataset, run: 
+```
+python3 clean_twitter_csv.py
+```
+
 To run the NTLK-based classifier for 8 different emotions on the EmoBank corpus, run: 
 ```
 python3 sentiment_analysis_nltk.py
