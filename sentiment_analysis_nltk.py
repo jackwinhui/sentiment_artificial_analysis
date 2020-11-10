@@ -17,45 +17,54 @@ from nltk import FreqDist, classify, NaiveBayesClassifier, MaxentClassifier, Skl
 from nltk.text import TextCollection
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.svm import SVC
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 
 import pandas as pd 
+import numpy as np
 import random
 
 MAX_ENT_MAX_ITER = 10
 NUM_DATA_PARTITIONS = 10
+SEED = 2000
 
 CSV_FILE_NAME = "clean_tweet.csv"
+TWEET_DF = pd.read_csv(CSV_FILE_NAME, index_col=0, encoding='ISO-8859–1', na_filter=False)
 
 
-def preprocess_dataset(): 
+def johns_pipeline(tweet_df): 
     """
-    Preprocesses the cleaned twitter CSV file for training/testing on NLTK. 
-    
-    1. Preprocesses + Tokenizes input text.
-    2. Converts VAD values to their closest basic emotion. 
-    3. Prints TFIDF (and does nothing else with it). 
+    Returns: pipeline 
     """
-    tweet_df = pd.read_csv(CSV_FILE_NAME, index_col=0, encoding='ISO-8859–1', na_filter=False)
+    classifier = LogisticRegression()
 
-    dataset = []
-    strs = [] 
-
-    for ind, row in tweet_df.iterrows(): 
-        sentiment_label = row['sentiment']
-        text_tokens = preprocess_text(row['text'])
-
-        strs.append(row['text'])
-
-        datapoint = (text_tokens, sentiment_label)
-        dataset.append(datapoint)
-
+    """
+    #TFIDF Vectorizer
     tf_idf = TfidfVectorizer(tokenizer=preprocess_text, stop_words='english')
     tds = tf_idf.fit_transform(strs)
+    """
+    #Count Vectorizer 
+    count_v = CountVectorizer(max_features=80000, ngram_range=(3, 3)) #trigrams with 80,000 features
+    count_v_matrix = count_v.fit_transform(tweet_df.text)
 
-    print(tds)
-    return dataset 
+    #Pipeline
+    pipeline = Pipeline([('vectorizer', count_v), ('classifer', classifier)])
 
+    return pipeline 
+
+def cross_validation(pipeline, tweet_df):
+    x = tweet_df.text
+    y = tweet_df.sentiment
+    x_train, x_test, y_train, y_test = train_test_split(x,y, test_size=.02, random_state=SEED)
+
+    classifier = pipeline.fit(x_train, y_train)
+    y_pred = classifier.predict(x_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    print("Accuracy: {}".format(accuracy))
+    return classifier
 
 def k_fold_cross_validation(dataset, k, classifier_type="naive_bayes"):
     """ 
@@ -100,14 +109,11 @@ def _create_tf_idf(source):
 
 
 if __name__ == "__main__": 
-    print("Preprocessing Twitter data...")
-    dataset = preprocess_dataset()
 
-    print("Training a model...")
-    classifier = k_fold_cross_validation(dataset, NUM_DATA_PARTITIONS)
+    classifier = cross_validation(johns_pipeline(TWEET_DF), TWEET_DF)
 
     while True: 
         sentence = input("Type a sentence to try classifying: ")
         labeler = lambda x : "Positive" if x > 0 else "Negative"
-        print(labeler(classifier.classify(preprocess_text(sentence))))
+        print(labeler(classifier.predict(sentence)))
 
