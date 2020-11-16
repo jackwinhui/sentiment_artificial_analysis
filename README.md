@@ -36,7 +36,7 @@ python3 clean_twitter_csv.py
 
 To run the NTLK-based classifier for 8 different emotions on the EmoBank corpus, run: 
 ```
-python3 sentiment_analysis_nltk.py
+python3 sentiment_analysis.py
 ```
 
 1,600,000 entry data set from twitter download link:
