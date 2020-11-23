@@ -12,7 +12,7 @@ from Stanford. This file currently:
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.metrics import accuracy_score
 
 import pandas as pd
@@ -41,23 +41,23 @@ def sklearn_pipeline(tweet_df, max_features, ngram_range):
     """
     classifier = LogisticRegression()
 
-    """
-    TODO: Leverage TFIDF in the pipeline.
-
     # TFIDF Vectorizer
-    tf_idf = TfidfVectorizer(tokenizer=preprocess_text, stop_words='english')
-    tds = tf_idf.fit_transform(strs)
+    tf_idf = TfidfVectorizer( 
+        max_features=max_features,
+        ngram_range=ngram_range
+    )
+    #tds = tf_idf.fit_transform(strs)
+    
     """
-
     # Count Vectorizer
     count_v = CountVectorizer(
         max_features=max_features,
         ngram_range=ngram_range
     )
     # count_v_matrix = count_v.fit_transform(tweet_df.text) # unused
-
+    """
     # Pipeline
-    pipeline = Pipeline([('vectorizer', count_v), ('classifer', classifier)])
+    pipeline = Pipeline([('vectorizer', tf_idf), ('classifer', classifier)])
 
     return pipeline
 
@@ -77,7 +77,6 @@ def train_and_test(pipeline, tweet_df, test_size):
     Returns:
         classifier, accuracy. The classifier and its accuracy score.
     """
-    # TODO: Implement cross-validation
     x = tweet_df.text
     y = tweet_df.sentiment
     x_train, x_test, y_train, y_test = train_test_split(
@@ -86,7 +85,14 @@ def train_and_test(pipeline, tweet_df, test_size):
 
     classifier = pipeline.fit(x_train, y_train)
     y_pred = classifier.predict(x_test)
+
+    #Cross Validation
+    scores = cross_val_score(classifier, x, y, cv=50)
+    print("Scores array: {}".format(scores))
+    max_score = max(scores)
+    print("Max score: {}".format(max_score))
     accuracy = accuracy_score(y_test, y_pred)
+    print("Accuracy: {}".format(accuracy))
     return classifier, accuracy
 
 
@@ -96,7 +102,7 @@ if __name__ == "__main__":
     pipeline = sklearn_pipeline(
         tweet_df=TWEET_DF,
         max_features=80000,
-        ngram_range=(3, 3),
+        ngram_range=(1, 3),
     )
     # Train/Test with .02 test split
     print("Training + testing classifier...")
