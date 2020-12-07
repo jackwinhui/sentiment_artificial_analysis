@@ -40,25 +40,25 @@ def sklearn_pipeline(tweet_df, max_features, ngram_range):
     Returns: A SKLearn pipeline for cross validation.
     """
     classifier = LogisticRegression()
-
+    
     # TFIDF Vectorizer
     tf_idf = TfidfVectorizer( 
         max_features=max_features,
         ngram_range=ngram_range
     )
     #tds = tf_idf.fit_transform(strs)
-    
-    """
+    """ 
     # Count Vectorizer
     count_v = CountVectorizer(
         max_features=max_features,
         ngram_range=ngram_range
     )
+
     # count_v_matrix = count_v.fit_transform(tweet_df.text) # unused
     """
     # Pipeline
     pipeline = Pipeline([('vectorizer', tf_idf), ('classifer', classifier)])
-
+    
     return pipeline
 
 
@@ -85,14 +85,14 @@ def train_and_test(pipeline, tweet_df, test_size):
 
     classifier = pipeline.fit(x_train, y_train)
     y_pred = classifier.predict(x_test)
-
+    """
     #Cross Validation
     scores = cross_val_score(classifier, x, y, cv=50)
     print("Scores array: {}".format(scores))
     max_score = max(scores)
     print("Max score: {}".format(max_score))
+    """
     accuracy = accuracy_score(y_test, y_pred)
-    print("Accuracy: {}".format(accuracy))
     return classifier, accuracy
 
 
@@ -102,7 +102,7 @@ if __name__ == "__main__":
     pipeline = sklearn_pipeline(
         tweet_df=TWEET_DF,
         max_features=80000,
-        ngram_range=(1, 3),
+        ngram_range=(1, 3)
     )
     # Train/Test with .02 test split
     print("Training + testing classifier...")
