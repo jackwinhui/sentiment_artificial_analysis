@@ -16,6 +16,7 @@ from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.metrics import accuracy_score
 
 import pandas as pd
+import pickle
 
 SEED = 2000
 
@@ -23,6 +24,15 @@ CSV_FILE_NAME = "clean_tweet.csv"
 TWEET_DF = pd.read_csv(
     CSV_FILE_NAME, index_col=0, encoding='ISO-8859–1', na_filter=False
 )
+MODEL_FILE_NAME = 'sentiment_analysis.sav'
+
+
+class SentimentAnalysisClassifier(object):
+    def __init__(self):
+        self.model = pickle.load(open(MODEL_FILE_NAME, 'rb'))
+ 
+    def classify(self, sentence):
+        return "Positive" if self.model.predict([sentence]) > 0 else "Negative"
 
 
 def sklearn_pipeline(tweet_df, max_features, ngram_range):
@@ -114,6 +124,10 @@ if __name__ == "__main__":
 
     print("Created a classifier with accuracy of {}".format(accuracy))
 
+    filename = 'sentiment_analysis.sav'
+    pickle.dump(classifier, open(filename, 'wb'))
+    print("Wrote classifier to file via pickle.")
+    
     while True:
         sentence = input("Type a sentence to try classifying: ")
         print("Positive" if classifier.predict([sentence]) > 0 else "Negative")
