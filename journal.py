@@ -8,6 +8,7 @@ Code for GUI Source: https://github.com/israel-dryer/Notepad/blob/master/notepad
 import PySimpleGUI as sg
 import pathlib
 import re
+from sentiment_analysis import SentimentAnalysisClassifier
 sg.ChangeLookAndFeel('BrownBlue') # change style
 
 alphabets= "([A-Za-z])"
@@ -113,9 +114,14 @@ def analyze_text():
     positive or negative based on sentiment_analysis methods
     based on the text found in body
     '''
+    result = []
+    classifier = SentimentAnalysisClassifier()
     text = values.get('_BODY_')
     sentences = split_into_sentences(text)
-    sg.popup_no_wait(sentences)
+    for s in sentences:
+        sentiment = classifier.classify(s)
+        result.append(sentiment)
+    sg.popup_no_wait(result)
 
 def analyze_file():
     '''
@@ -123,12 +129,17 @@ def analyze_file():
     positive or negative based on sentiment_analysis methods
     based on the text found in imported file
     '''
+    result = []
+    classifier = SentimentAnalysisClassifier()
     filename = sg.popup_get_file('Open', no_window=True)
     if filename:
         file = pathlib.Path(filename)
         text = file.read_text()
         sentences = split_into_sentences(text)
-        sg.popup_no_wait(sentences)   
+        for s in sentences:
+            sentiment = classifier.classify(s)
+            result.append(sentiment)
+        sg.popup_no_wait(result)  
 
 while True:
     event, values = window.read()
