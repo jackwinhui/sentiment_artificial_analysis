@@ -81,5 +81,16 @@ class Text5W1H(object):
         how = self.answers['how']
         return self._get_top_answer('how') if len(how) else None
 
+    def what_index(self):
+        """
+        Returns: the index for the what question in a given sentence.
+        """
+        try:
+            what = self.doc.get_top_answer('what')
+            return what.get_parts_character_offset()
+        except IndexError:
+            return None
+
+
     def _get_top_answer(self, question):
         return self.doc.get_top_answer(question).get_parts_as_text()
