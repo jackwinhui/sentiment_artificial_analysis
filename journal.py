@@ -11,7 +11,7 @@ import re
 from sentiment_analysis import SentimentAnalysisClassifier
 from fiveWoneH import Text5W1H
 
-sg.ChangeLookAndFeel('BrownBlue')  # change style
+sg.ChangeLookAndFeel('TanBlue')  # change style
 
 alphabets = "([A-Za-z])"
 prefixes = "(Mr|St|Mrs|Ms|Dr)[.]"
@@ -19,6 +19,15 @@ suffixes = "(Inc|Ltd|Jr|Sr|Co)"
 starters = "(Mr|Mrs|Ms|Dr|He\s|She\s|It\s|They\s|Their\s|Our\s|We\s|But\s|However\s|That\s|This\s|Wherever)"
 acronyms = "([A-Z][.][A-Z][.](?:[A-Z][.])?)"
 websites = "[.](com|net|org|io|gov)"
+
+
+WHAT_POS_MESSAGE = "These events in your journal entry corresponded with positive moods:\n\n {}"
+WHAT_NEG_MESSAGE = "These events in your journal entry corresponded with negative moods:\n\n {}"
+WHO_POS_MESSAGE = "These actors in your journal entry corresponded with positive moods:\n\n {}"
+WHO_NEG_MESSAGE = "These actors in your journal entry corresponded with negative moods:\n\n {}"
+WHERE_POS_MESSAGE = "These places in your journal entry corresponded with positive moods:\n\n {}"
+WHERE_NEG_MESSAGE = "These places in your journal entry corresponded with negative moods:\n\n {}"
+
 
 WIN_W = 90
 WIN_H = 25
@@ -31,11 +40,11 @@ menu_layout = [['File', ['New (Ctrl+N)', 'Open (Ctrl+O)', 'Save (Ctrl+S)', 'Save
               ['Tools', ['Word Count']],
               ['Help', ['About']]]
 
-layout = [[sg.Menu(menu_layout)],
+layout = [[sg.Menu(menu_layout, text_color="white", font=('Consolas', 14))],
           [sg.Text('> Journal Entry <', font=('Consolas', 10), size=(WIN_W, 1), key='_INFO_')],
           [sg.Multiline(font=('Consolas', 12), size=(WIN_W, WIN_H), key='_BODY_')],
-          [sg.Button('Analyze from text'), sg.Button('Analyze Sentiment')],
-          [sg.Button('What'), sg.Button('Who')]]
+          [sg.Button('Analyze Text'), sg.Button('Analyze Sentiment')],
+          [sg.Button('Analyze What'), sg.Button('Analyze Who'), sg.Button('Analyze Where')]]
 
 window = sg.Window('Journal', layout=layout, margins=(0, 0), resizable=True, return_keyboard_events=True, finalize=True)
 window.maximize()
@@ -52,7 +61,7 @@ def new_file():
 
 def open_file():
     '''Open file and update the infobar'''
-    filename = sg.popup_get_file('Open', no_window=True)
+    filename = sg.popup_get_file('Open', no_window=False)
     if filename:
         file = pathlib.Path(filename)
         window['_BODY_'].update(value=file.read_text())
@@ -123,11 +132,61 @@ def split_into_sentences(text):
 
 def analyze_text():
     '''
+    Final product right here baby.
+    '''
+    classifier = SentimentAnalysisClassifier()
+    text = values.get('_BODY_')
+    sentences = split_into_sentences(text)
+
+    what_pos_answers = []
+    what_neg_answers = []
+    who_pos_answers = []
+    who_neg_answers = []
+    where_pos_answers = []
+    where_neg_answers = []
+    for s in sentences:
+        text5w1h = Text5W1H(s)
+
+        what = text5w1h.what()
+        who = text5w1h.who()
+        where = text5w1h.where()
+
+        sentiment = classifier.classify(s)
+
+        if what:
+            what_pos_answers.append(what) if sentiment == "Positive" else what_neg_answers.append(what)
+        if who:
+            who_pos_answers.append(who) if sentiment == "Positive" else who_neg_answers.append(who)
+        if where:
+            where_pos_answers.append(where) if sentiment == "Positive" else where_neg_answers.append(where)
+
+    message = ""
+    message += (WHAT_POS_MESSAGE.format(', '.join(what_pos_answers)))
+    message += "\n\n"
+    
+    message += (WHAT_NEG_MESSAGE.format(', '.join(what_neg_answers)))
+    message += "\n\n"
+
+    message += (WHO_POS_MESSAGE.format(', '.join(who_pos_answers)))
+    message += "\n\n"
+
+    message += (WHO_NEG_MESSAGE.format(', '.join(who_neg_answers)))
+    message += "\n\n"
+
+    message += (WHERE_POS_MESSAGE.format(', '.join(where_pos_answers)))
+    message += "\n\n"
+
+    message += (WHERE_NEG_MESSAGE.format(', '.join(where_neg_answers)))
+
+    sg.popup_ok(message, title="Analysis")
+
+
+def analyze_what():
+    '''
     Extracts events from each sentence and tags them as 
     positive or negative based on sentiment_analysis methods
     based on the text found in body
     '''
-    answers = []
     classifier = SentimentAnalysisClassifier()
     text = values.get('_BODY_')
     sentences = split_into_sentences(text)
@@ -135,14 +194,63 @@ def analyze_text():
     for s in sentences:
         answers = Text5W1H(s).what_index()
         if answers:
-            index, length = answers
+            start, end = answers
             sentiment = classifier.classify(s)
             color = 'green' if sentiment == 'Positive' else 'red'
-            window['_BODY_'].update(value=s[:index], append=True)
-            window['_BODY_'].update(value=s[index:index+length-2], background_color_for_value=color, append=True)
-            window['_BODY_'].update(value=s[index+length-2:], append=True)
+            window['_BODY_'].update(value=s[:start], append=True)
+            window['_BODY_'].update(value=s[start:end], background_color_for_value=color, append=True)
+            window['_BODY_'].update(value=s[end:], append=True)
+            window['_BODY_'].update(value=" ", append=True)
         else:
-            window['_BODY_'].update(s, append=True)
+            window['_BODY_'].update(s + " ", append=True)
+
+
+def analyze_who():
+    '''
+    Extracts events from each sentence and tags them as 
+    positive or negative based on sentiment_analysis methods
+    based on the text found in body
+    '''
+    classifier = SentimentAnalysisClassifier()
+    text = values.get('_BODY_')
+    sentences = split_into_sentences(text)
+    window['_BODY_'].update(value='')
+    for s in sentences:
+        answers = Text5W1H(s).who_index()
+        if answers:
+            start, end = answers
+            sentiment = classifier.classify(s)
+            color = 'green' if sentiment == 'Positive' else 'red'
+            window['_BODY_'].update(value=s[:start], append=True)
+            window['_BODY_'].update(value=s[start:end], background_color_for_value=color, append=True)
+            window['_BODY_'].update(value=s[end:], append=True)
+            window['_BODY_'].update(value=" ", append=True)
+        else:
+            window['_BODY_'].update(s + " ", append=True)
+
+
+def analyze_where():
+    '''
+    Extracts events from each sentence and tags them as 
+    positive or negative based on sentiment_analysis methods
+    based on the text found in body
+    '''
+    classifier = SentimentAnalysisClassifier()
+    text = values.get('_BODY_')
+    sentences = split_into_sentences(text)
+    window['_BODY_'].update(value='')
+    for s in sentences:
+        answers = Text5W1H(s).where_index()
+        if answers:
+            start, end = answers
+            sentiment = classifier.classify(s)
+            color = 'green' if sentiment == 'Positive' else 'red'
+            window['_BODY_'].update(value=s[:start], append=True)
+            window['_BODY_'].update(value=s[start:end], background_color_for_value=color, append=True)
+            window['_BODY_'].update(value=s[end:], append=True)
+            window['_BODY_'].update(value=" ", append=True)
+        else:
+            window['_BODY_'].update(s + " ", append=True)
 
 
 def analyze_sentiment():
@@ -156,8 +264,9 @@ def analyze_sentiment():
         total += 1
         positive += 1 if sentiment == "Positive" else 0
     percentage = positive*100 / total
+    truncate = min(4, len(str(percentage)))
     sg.popup_ok(
-        "Your sentences were {}% positive.".format(percentage), 
+        "Your sentences were {}% positive.".format(str(percentage)[:truncate]), 
         title="Sentiment Analysis",
     )
 
@@ -203,16 +312,18 @@ while True:
     if event in ('Save (Ctrl+S)', 's:83'):
         save_file(file)
     if event in ('Save As',):
-        file = save_file_as()   
+        file = save_file_as()
     if event in ('Word Count',):
-        word_count() 
+        word_count()
     if event in ('About',):
         about_me()
-    if event in ('Analyze from text',):
+    if event in ('Analyze Text',):
         analyze_text()
     if event in ('Analyze Sentiment',):
         analyze_sentiment()
-    if event in ('What',):
-        print("hi")
-    if event in ('Who',):
-        window['_BODY_'].update(value='Joe is a great friend.')
+    if event in ('Analyze What',):
+        analyze_what()
+    if event in ('Analyze Who',):
+        analyze_who()
+    if event in ('Analyze Where',):
+        analyze_where()

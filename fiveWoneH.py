@@ -91,6 +91,25 @@ class Text5W1H(object):
         except IndexError:
             return None
 
+    def who_index(self):
+        """
+        Returns: the index for the what question in a given sentence.
+        """
+        try:
+            what = self.doc.get_top_answer('who')
+            return what.get_parts_character_offset()
+        except IndexError:
+            return None
+
+    def where_index(self):
+        """
+        Returns: the index for the what question in a given sentence.
+        """
+        try:
+            what = self.doc.get_top_answer('where')
+            return what.get_parts_character_offset()
+        except IndexError:
+            return None
 
     def _get_top_answer(self, question):
         return self.doc.get_top_answer(question).get_parts_as_text()
