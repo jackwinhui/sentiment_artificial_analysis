@@ -42,10 +42,14 @@ python3 sentiment_analysis.py
 1,600,000 entry data set from twitter download link:
 http://cs.stanford.edu/people/alecmgo/trainingandtestdata.zip 
 
-## Running 5W1H 
-Note that to use any methods from the `Text5W1H` class, you will have to start the core-nlp server first from the command line. This can be done by running the following from the command line. 
+## Running the program 
+First, start the CoreNLP server in the command line using the following command. 
 ```
 giveme5w1h-corenlp
+```
+Then, in a seperate window, run
+```
+python3 journal.py
 ```
 
 ## References
