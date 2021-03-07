@@ -6,6 +6,8 @@ This repo contains the Cornell NLP 4701 (AI Practicum) project by Jackwin Hui, J
 
 Today, young adults more than ever struggle with reflecting on the causes of their own emotions. Through this project, we aim to help users understand themselves by providing them with objective information about the way they are responding to events around them. The user will input journal entries into our platform, and our product will output an analysis of events and emotions from this journal entry. For example, if a user enters a week’s worth of journal entries onto our platform, our product might tell the user something like “We found that on 5 out of 7 days last week, you were stressed due to schoolwork”.
 
+[![CS 4701 Project Synopsis Video](https://i.imgur.com/1Q2FQgI.png)](https://www.youtube.com/watch?v=VGXcWkWDSm4 "CS 4701 Project Synopsis Video - Click to Watch!")
+
 ## Setup 
 
 First, follow Python virtual environment setup here:  https://www.digitalocean.com/community/tutorial_series/how-to-install-and-set-up-a-local-programming-environment-for-python-3 
